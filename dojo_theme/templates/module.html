@@ -202,6 +202,9 @@
       <div id="challenge{{ loop.index }}" class="collapse" aria-labelledby="challengeHeading{{ loop.index }}" data-parent="#challenges">
         <div class="card-body">
           <div class="row">
+            <div class="row">
+              {{ render_markdown(challenge.description) }}
+            </div>
             <div class="col-sm-6 form-group text-center">
               <button id="challenge-start" type="submit" class="btn btn-md btn-outline-secondary w-100">
                 <span class="d-sm-block d-md-block d-lg-block">

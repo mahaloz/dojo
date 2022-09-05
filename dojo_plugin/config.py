@@ -1,6 +1,7 @@
+import warnings
+import yaml
 import os
 import re
-import warnings
 
 from CTFd.models import db, Admins, Pages, Flags
 from CTFd.cache import cache
@@ -97,10 +98,10 @@ def bootstrap():
         ]
 
     challenges = sorted(
-        ((path.parent.name, path.name) for path in CHALLENGES_DIR.glob("*/*")),
+        ((path.parent.name, path.name, path) for path in CHALLENGES_DIR.glob("*/*")),
         key=lambda k: (k[0], natural_key(k[1])),
     )
-    for category, name in challenges:
+    for category, name, path in challenges:
         if name.startswith(".") or name.startswith("_"):
             continue
         if category.startswith(".") or category.startswith("_"):
@@ -109,13 +110,21 @@ def bootstrap():
         challenge = DojoChallenges.query.filter_by(
             name=name, category=category
         ).first()
+        yml_path = path/"challenge.yml"
+        if yml_path.exists():
+            data = yaml.safe_load(yml_path.read_text())
+            description = f"""**{data["name"]}**\n\n{data["description"]}"""
+            challenge.description = description
+        else:
+            description = ""
+
         if challenge:
             continue
 
         challenge = DojoChallenges(
             name=name,
             category=category,
-            description="",
+            description=description,
             value=1,
             state="visible",
             docker_image_name="pwncollege_challenge",
